@@ -44,13 +44,12 @@ q1 = total1   # sum of squares of entries of biglist
 # #      for each 0 <= i <= 13.
 
 newlist01 = []
-for i in range(16):
+for i in range(14):
     newlist01.append(list01[i]+list02[i])
 # Created a new list called newlist01 and left it empty. Then, for every index of list01/list02,
 # which ranges from 0-15 inclusive, I added an element into newlist01 that corresponded to adding
 # that element of list01 and list02. I used range(16) since it would provide 0-16 noninclusive of the 16.
 q2 = newlist01   # newlist01
-
 
 
 # # 3.  Determine the number of entries in biglist that are less than 6.
@@ -133,6 +132,8 @@ def game(iterations):
         money = int(np.sum(flips))
         if money == 5:
             money += 7
+        elif money == 0:
+            money += 1
         games.append(money)
     return games
 # Built a method that simulates the game for a given number of iterations. It first creates a list that will store game
