@@ -30,7 +30,7 @@ biglist = list01 + list02 + list03 + list04 + list05
 # # 1.  Add up the squares of the entries of biglist.
 total1 = 0
 for i in biglist:
-    total1 += i
+    total1 += i**2
 # Defined a new variable, total, to be the sum of all the lists. It starts at 0,
 # then for each element in bigList, it adds it to total.
 q1 = total1   # sum of squares of entries of biglist
@@ -50,6 +50,7 @@ for i in range(16):
 # which ranges from 0-15 inclusive, I added an element into newlist01 that corresponded to adding
 # that element of list01 and list02. I used range(16) since it would provide 0-16 noninclusive of the 16.
 q2 = newlist01   # newlist01
+
 
 
 # # 3.  Determine the number of entries in biglist that are less than 6.
