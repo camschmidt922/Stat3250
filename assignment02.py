@@ -173,4 +173,34 @@ q8 = np.mean(game(100000))  # mean winnings from 100,000 times playing the game
 # #      Use 100,000 simulated quizzes to estimate Jay's average 
 # #      score.
 
-q9 = None  # mean score from 100,000 simulated quizzes
+def test(iterations):
+    score = 0
+    for i in range(iterations):
+        previousCorrect = True
+        correct = 1
+        if np.random.binomial(n=1, p=0.81) != 1:
+            previousCorrect = False
+            correct -= 1
+        for i in range(14):
+            if previousCorrect and np.random.binomial(n=1, p=0.9) == 1:
+                correct += 1
+            elif not previousCorrect and np.random.binomial(n=1, p=0.72) == 1:
+                correct += 1
+                previousCorrect = True
+            else:
+                previousCorrect = False
+        score += correct*5
+    return score
+
+# Created a function to simulate a given number of iterations of the test. The function hosts a total score value.
+# Then, using a loop for each iteration of the test, you start with a boolean representing if you were correct on the
+# previous problem to be true, and the number of correct answers is 1. A check using a binomial rv with length 1
+# (Bernoulli rv) is checked to see if this question was incorrect. If it was, the boolean is switched to false and the
+# number of correct answers is adjusted. Then, it repeats a similar process for the next 14 questions, but also with a
+# check if the previous question was correct to adjust the probability of getting a question correct. If it is correct,
+# it adds one to the number of correct answers and adjusts the boolean if needed. If wrong, it adjusts the boolean. At
+# the end of each run of the loop of the entire test, it adds the number of correct answers times 5 to the score.
+# I then run this with 100000 iterations and divide the final, total score by 100000 to get the average score of each
+# test.
+q9 = test(100000)/100000  # mean score from 100,000 simulated quizzes
+
