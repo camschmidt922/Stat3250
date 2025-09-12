@@ -148,6 +148,10 @@ def game(iterations):
 # results, which upon n iterations will grow to have length n. Then, I use the mean function in NumPy to assign the
 # mean of this list with 100000 iterations (and thus the average earnings of 100000 iterations of the game) to q8.
 
+#Bonus: E[X] = 1P(X=1)+2P(X=2)+3P(X=3) . . . +12P(X=12) = 1(.53125) + 2(.125) + 3(.1875) + 4(.125) + 12(0.03125)
+# = 2.21875
+
+
 q8 = np.mean(game(100000))  # mean winnings from 100,000 times playing the game
 
 # #  9. Jay is taking a 15 question true/false quiz online. The
@@ -204,3 +208,19 @@ def test(iterations):
 # test.
 q9 = test(100000)/100000  # mean score from 100,000 simulated quizzes
 
+# Bonus (I'm going to regret trying this)
+
+def cProb(n):
+    if n == 1:
+        return .81
+    return .18*cProb(n-1) + .72
+
+expectation = 5*sum(cProb(n) for n in range(1,16))
+print(expectation)
+
+# Pretty much just a recursive formula based on conditional probabilities.
+# P(question n right)=P(right|question n-1 wrong) + P(right|question n-1 right).
+# The function cProb(n) does this recursion until n=1, then returns the base case of the first question.
+# Expectation just sums the probability of getting each question correct, as it is repeated Bernoulli variables
+# where the probability is the expectation. Then, multiply by 5 to get the score.
+# E[X] = 65.4387
