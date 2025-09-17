@@ -113,7 +113,7 @@ q10 = absent["Absenteeism time in hours"].groupby(absent["Day of the week"]).med
 # #     Give the month number and median as a Series with the month number
 # #     as the index, sorted by month number from smallest to largest.
 
-q11 = absent["Absenteeism time in hours"].groupby(absent["Month of absence"]).median().sort_index()  # Series of median hours absent by day of week.
+q11 = absent["Absenteeism time in hours"].groupby(absent["Month of absence"]).median().sort_index()[1:]  # Series of median hours absent by day of week.
 # Comments would be redundant.
 
 
