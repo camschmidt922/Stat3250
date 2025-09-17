@@ -95,22 +95,26 @@ q8b = (np.sum(absent.loc[absent["Absenteeism time in hours"]<=7, "Social drinker
 # #     for the index, sorted by the total hours absent from most to least.
 # #     If there are ties for the 6th most absent employee, include all IDs that tie for 6th.
 
-q9 = absent["Absenteeism time in hours"].groupby(absent["ID"]).sum().sort_values()[:8]  # Series of top-8 employee IDs in terms of total hours absent
+q9 = absent["Absenteeism time in hours"].groupby(absent["ID"]).sum().sort_values(ascending=False)[:8]  # Series of top-8 employee IDs in terms of total hours absent
 # Groups a subset including only absenteeism time by ID number and then sums the total hours absent for each ID number.
-# Then, it sorts this series and subsets by taking up to and including the 8th item of it.
+# Then, it sorts this series in descending order and subsets by taking up to and including the 8th item of it.
+
 
 # # 10. Find the median hours absent per record for each day of the week.
 # #     Give the day number and median as a Series with the day number
 # #     as the index, sorted by day number from smallest to largest.
 
-q10 = None  # Series of median hours absent by day of week.
+q10 = absent["Absenteeism time in hours"].groupby(absent["Day of the week"]).median().sort_index()  # Series of median hours absent by day of week.
+# Groups a subset including only absenteeism time by day of the week and then takes the median hours absent for each day.
+# Then, it sorts this series by index.
 
 
 # # 11. Repeat Question 10 replacing day of the week with month.
 # #     Give the month number and median as a Series with the month number
 # #     as the index, sorted by month number from smallest to largest.
 
-q11 = None  # Series of median hours absent by day of week.
+q11 = absent["Absenteeism time in hours"].groupby(absent["Month of absence"]).median().sort_index()  # Series of median hours absent by day of week.
+# Comments would be redundant.
 
 
 # # 12. Find the top 4 most common reasons for absence for the social drinkers.
@@ -119,4 +123,7 @@ q11 = None  # Series of median hours absent by day of week.
 # #      largest to smallest.  (If there is a tie for 4th place,
 # #      include all that tied for that position.)
 
-q12 = None  # Series of reason codes and counts
+q12 = absent.loc[absent["Social drinker"]==1, "Reason for absence"].groupby(absent["Reason for absence"]).count().sort_values(ascending=False)[:4]  # Series of reason codes and counts
+# Takes a subset of the data frame that only shows the reason for absence when that absence is by a social drinker.
+# Then, it groups by the reason for absence and takes a count of how many occurrences are in each group. This list is
+# then sorted in descending order by the counts, and subset to show only the first 4 elements.
