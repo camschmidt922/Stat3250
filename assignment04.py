@@ -56,8 +56,11 @@ q3 = np.sum(dia.loc[dia["time_in_hospital"] >=5, "time_in_hospital"])/np.sum(dia
 # #     to be for a separate hospital visit. Do not include the % symbol in
 # #     your answer.
 
-q4 = None  # percentage patients with at least four visits
-
+q4 = len(dia.groupby(dia["patient_nbr"]).size()[dia.groupby(dia["patient_nbr"]).size()>4])/len(dia.groupby(dia["patient_nbr"]).size())*100  # percentage patients with at least four visits
+# Grouped the data by patient_nbr and used the size function to get how many hospital visits per each patient. I then
+# further subset this to get all patients who had at least 4 visits, and took the length of this to get how many patients
+# fit this condition. I divided by the length of the first series of unique patient numbers (total number of patients)
+# to get a ratio, then multiplied by 100 to get a percentage.
 
 # # 5.  List the top-10 most common diagnoses, based on the codes listed 
 # #     collectively in the columns 'diag_1', 'diag_2', and 'diag_3'.
@@ -67,8 +70,12 @@ q4 = None  # percentage patients with at least four visits
 # #     go in the 10th position, include all that could go in that 
 # #     position.  (This is the usual "include ties" policy.)
 
-q5 = None  # top-10 diagnoses plus any ties
-
+q5 = pd.concat([dia['diag_1'], dia['diag_2'], dia['diag_3']], ignore_index=True)[
+    pd.concat([dia['diag_1'], dia['diag_2'], dia['diag_3']],
+              ignore_index=True) != "?"].value_counts()[:10]  # top-10 diagnoses plus any ties
+# Concatenated the diagonals into one series and then removed the empty data by subsetting using a logical vector that
+# was true when there was entered data. Then, I took the counts of each possible diagnosis and subset this list of counts
+# to include only the 10 highest.
 
 # # 6.  The 'age' in each record is given as a 10-year range of ages.  Assume
 # #     that the age for a person is the middle of the range.  (For instance,
@@ -77,8 +84,20 @@ q5 = None  # top-10 diagnoses plus any ties
 # #     answer as a Series with the classification as index and averages as
 # #     values, sorted from largest to smallest average.
 
-q6 = None  # Series of classifications and averages
-
+q6 = dia["age"].map({
+    '[0-10)'  : 5,
+    '[10-20)' : 15,
+    '[20-30)' : 25,
+    '[30-40)' : 35,
+    '[40-50)' : 45,
+    '[50-60)' : 55,
+    '[60-70)' : 65,
+    '[70-80)' : 75,
+    '[80-90)' : 85,
+    '[90-100)': 95
+}).groupby(dia["acarbose"]).mean()# Series of classifications and averages
+# I used the map function to transform all the age ranges into the midpoint using a dictionary, then grouped
+# the column of ages by acarbose and took the mean for each group.
 
 # # 7.  Determine all medical specialties that have an average hospital stay
 # #     (based on time_in_hospital) of at least 7 days.  Give a Series with
