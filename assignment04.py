@@ -104,9 +104,8 @@ q6 = dia["age"].map({
 # #     specialty as index and average hospital stay as values, sorted from
 # #     largest to smallest average stay.
 
-q7 = dia.loc[(dia["time_in_hospital"] >= 7) & (dia["medical_specialty"] != "?"), "time_in_hospital"].groupby(dia["medical_specialty"]).mean().sort_values(ascending=False)  # Series of specialities and average stays
-# Subsets the data to include rows where the time in hospital is over the threshold and the medical specialty is not
-# unknown, showing only the time in hospital column. Then, it groups by medical specialty, takes the average of the
+q7 = dia.loc[(dia["time_in_hospital"] >= 7), "time_in_hospital"].groupby(dia["medical_specialty"]).mean().sort_values(ascending=False)  # Series of specialities and average stays
+# Subsets the data to include rows where the time in hospital is over the threshold, showing only the time in hospital column. Then, it groups by medical specialty, takes the average of the
 # time for each group, and sorts in descending order.
 
 # #  8. Three medications for type 2 diabetes are 'glipizide', 'glimepiride',
