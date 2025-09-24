@@ -56,7 +56,7 @@ q3 = np.sum(dia.loc[dia["time_in_hospital"] >=5, "time_in_hospital"])/np.sum(dia
 # #     to be for a separate hospital visit. Do not include the % symbol in
 # #     your answer.
 
-q4 = len(dia.groupby(dia["patient_nbr"]).size()[dia.groupby(dia["patient_nbr"]).size()>4])/len(dia.groupby(dia["patient_nbr"]).size())*100  # percentage patients with at least four visits
+q4 = len(dia.groupby(dia["patient_nbr"]).size()[dia.groupby(dia["patient_nbr"]).size()>=4])/len(dia.groupby(dia["patient_nbr"]).size())*100  # percentage patients with at least four visits
 # Grouped the data by patient_nbr and used the size function to get how many hospital visits per each patient. I then
 # further subset this to get all patients who had at least 4 visits, and took the length of this to get how many patients
 # fit this condition. I divided by the length of the first series of unique patient numbers (total number of patients)
@@ -104,16 +104,23 @@ q6 = dia["age"].map({
 # #     specialty as index and average hospital stay as values, sorted from
 # #     largest to smallest average stay.
 
-q7 = None  # Series of specialities and average stays
-
+q7 = dia.loc[(dia["time_in_hospital"] >= 7) & (dia["medical_specialty"] != "?"), "time_in_hospital"].groupby(dia["medical_specialty"]).mean().sort_values(ascending=False)  # Series of specialities and average stays
+# Subsets the data to include rows where the time in hospital is over the threshold and the medical specialty is not
+# unknown, showing only the time in hospital column. Then, it groups by medical specialty, takes the average of the
+# time for each group, and sorts in descending order.
 
 # #  8. Three medications for type 2 diabetes are 'glipizide', 'glimepiride',
 # #     and 'glyburide'.  There are columns in the data for each of these.
 # #     Determine the number of records for which at least two of these
 # #     are listed as 'Steady'.
 
-q8 = None  # number of records with at least two 'Steady'
-
+q8 = len(dia.loc[(dia["glyburide"]=="Steady").astype(int)+
+                  (dia["glipizide"]=="Steady").astype(int)+
+                  (dia["glimepiride"]=="Steady").astype(int) > 1])  # number of records with at least two 'Steady'
+# Subsets the data by getting logical values for whether each medicine is given steadily, then casting these values
+# to integers (True=1, False=0) and adding them together. If this total is more than 1 (at least 2), then it returns
+# true and includes this row in the subset. Then, it counts the length of the subset to get how many records fit this
+# condition.
 
 # #  9. Find the percentage of "time_in_hospital" accounted for by the top-75 
 # #     patients in terms of number of times in file.  (Include all patients 
