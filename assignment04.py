@@ -104,9 +104,11 @@ q6 = dia["age"].map({
 # #     specialty as index and average hospital stay as values, sorted from
 # #     largest to smallest average stay.
 
-q7 = dia.loc[(dia["time_in_hospital"] >= 7), "time_in_hospital"].groupby(dia["medical_specialty"]).mean().sort_values(ascending=False)  # Series of specialities and average stays
-# Subsets the data to include rows where the time in hospital is over the threshold, showing only the time in hospital column. Then, it groups by medical specialty, takes the average of the
-# time for each group, and sorts in descending order.
+q7 = dia["time_in_hospital"].groupby(dia["medical_specialty"]).mean()[
+                 dia["time_in_hospital"].groupby(
+                     dia["medical_specialty"]).mean() >= 7].sort_values(ascending=False)# Series of specialities and average stays
+# Subsets the data, showing only the time in hospital column. Then, it groups by medical specialty, takes the average of the
+# time for each group, subsets to include only those at least 7, and sorts in descending order.
 
 # #  8. Three medications for type 2 diabetes are 'glipizide', 'glimepiride',
 # #     and 'glyburide'.  There are columns in the data for each of these.
@@ -125,8 +127,12 @@ q8 = len(dia.loc[(dia["glyburide"]=="Steady").astype(int)+
 # #     patients in terms of number of times in file.  (Include all patients 
 # #     that tie the 75th patient.)
 
-q9 = None  # Percentage of time from top-75 patients
-
+q9 = np.sum(dia["time_in_hospital"].groupby(dia["patient_nbr"]).sum().sort_values(ascending=False)[:75])/np.sum(
+    dia["time_in_hospital"])*100  # Percentage of time from top-75 patients
+# Subsets the dataframe to show only the time and sorts by patient number, totaling the time for each patient. Then,
+# it sorts this series in descending order and subsets it to only include the top 75 patients in terms of time, and sums
+# these times together. Then, it is divided by the total amount of time in the dataframe and multiplied by 100 to be a
+# percentage.
 
 # # 10. What percentage records have reasons for admission ('admission_source_id') that correspond to some form of transfer from another care source?
 
