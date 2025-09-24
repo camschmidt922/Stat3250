@@ -127,13 +127,13 @@ q8 = len(dia.loc[(dia["glyburide"]=="Steady").astype(int)+
 # #     patients in terms of number of times in file.  (Include all patients 
 # #     that tie the 75th patient.)
 
-q9 = np.sum(dia["time_in_hospital"].groupby(dia["patient_nbr"]).sum().sort_values(ascending=False)[:75])/np.sum(
-    dia["time_in_hospital"])*100  # Percentage of time from top-75 patients
+q9 = np.sum(dia.loc[dia["patient_nbr"].isin(dia.groupby(dia["patient_nbr"]).size().sort_values(ascending=False)[:75].index),
+    "time_in_hospital"])/np.sum(dia["time_in_hospital"])*100# Percentage of time from top-75 patients
 # Subsets the dataframe to show only the time and sorts by patient number, totaling the time for each patient. Then,
 # it sorts this series in descending order and subsets it to only include the top 75 patients in terms of time, and sums
 # these times together. Then, it is divided by the total amount of time in the dataframe and multiplied by 100 to be a
 # percentage.
-
+print(q9)
 # # 10. What percentage records have reasons for admission ('admission_source_id') that correspond to some form of transfer from another care source?
 
 q10 = None  # Percentage of admission by transfer
