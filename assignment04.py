@@ -83,8 +83,7 @@ q5 = pd.concat([dia['diag_1'], dia['diag_2'], dia['diag_3']], ignore_index=True)
 # #     age for each classification in the column 'acarbose'.  Give your
 # #     answer as a Series with the classification as index and averages as
 # #     values, sorted from largest to smallest average.
-
-q6 = dia["age"].map({
+midpoints = {
     '[0-10)'  : 5,
     '[10-20)' : 15,
     '[20-30)' : 25,
@@ -95,7 +94,10 @@ q6 = dia["age"].map({
     '[70-80)' : 75,
     '[80-90)' : 85,
     '[90-100)': 95
-}).groupby(dia["acarbose"]).mean()# Series of classifications and averages
+}
+age_str=dia["age"].astype(str).str.strip()
+dia["age_mid"] = age_str.map(midpoints)
+q6 = dia.groupby("acarbose")["age_mid"].mean().sort_values(ascending=False)# Series of classifications and averages
 # I used the map function to transform all the age ranges into the midpoint using a dictionary, then grouped
 # the column of ages by acarbose and took the mean for each group.
 
@@ -127,14 +129,20 @@ q8 = len(dia.loc[(dia["glyburide"]=="Steady").astype(int)+
 # #     patients in terms of number of times in file.  (Include all patients 
 # #     that tie the 75th patient.)
 
-q9 = (dia.loc[dia["patient_nbr"].isin(dia.groupby("patient_nbr").size().sort_values(ascending=False).head(77).index),
-        "time_in_hospital"].sum()/ dia["time_in_hospital"].sum()) * 100 # Percentage of time from top-75 patients
-# 
-print(q9)
+patient_counts = dia["patient_nbr"].value_counts()
+cutoff = patient_counts.iloc[74]
+top_patients = patient_counts[patient_counts >= cutoff].index
+q9 =  dia.loc[dia["patient_nbr"].isin(top_patients),"time_in_hospital"].sum()/dia["time_in_hospital"].sum()*100# Percentage of time from top-75 patients
+#Counted the total visits from each patient and sorted them, using the 75th largest number as a cutoff. Then subset
+# the patients by taking the index of each patient count that was above the cutoff for visits. Summed up the time in
+# hospital for all patients in this subset, divided by the total time in hospital, and multiplied by 100 to get a percentage.
+
 # # 10. What percentage records have reasons for admission ('admission_source_id') that correspond to some form of transfer from another care source?
 
-q10 = None  # Percentage of admission by transfer
-
+transfer_ids = [4,5,6,10,18,22,25]
+q10 = dia["admission_source_id"].isin(transfer_ids).mean()*100  # Percentage of admission by transfer
+# Creates a logical vector where each entry corresponds to if the admission was some form of transfer. Taking the average
+# of this vector is the number of trues divided by number of entries, which is multiplied by 100 to get the desired percentage.
 
 # # 11. The column 'discharge_disposition_id' gives codes for discharges.
 # #     Determine the 7 codes that resulted in the greatest percentage of
@@ -142,7 +150,15 @@ q10 = None  # Percentage of admission by transfer
 # #     as index and readmission percentage as value, sorted by percentage
 # #     from largest to smallest. The codes '<30' and '>30' in the 'readmitted' column indicate a readmission.
 
-q11 = None  # Series of discharge codes and readmission percentages
+is_readmitted = dia["readmitted"].isin(["<30", ">30"])
+grouped = dia.groupby("discharge_disposition_id")["readmitted"].agg(
+    total="count",
+    readmit=lambda x: x.isin(["<30", ">30"]).sum())
+grouped["readmit_percent"] = grouped["readmit"] / grouped["total"] * 100
+q11 = grouped["readmit_percent"].sort_values(ascending=False).head(7)  # Series of discharge codes and readmission percentages
+#Created a boolean column indicating readmission, then group by discharge_disposition_id and created a new dataframe
+# with the total number in each group and the total number readmit in each group. Then, calculated the readmission
+# percentage for each group, sorted, and subset the 7 largest.
 
 
 # # 12. The columns from 'metformin' to 'citoglipton' are all medications, 
@@ -154,5 +170,22 @@ q11 = None  # Series of discharge codes and readmission percentages
 # #     largest to smallest average.
 # #     (Hint: df.columns gives the column names of the data frame df.)
 
-q12 = None  # Series of medications and averages
-
+med_cols = dia.loc[:, "metformin":"citoglipton"].columns
+taking = dia[med_cols].isin(["Up", "Down", "Steady"])
+# Created a boolean DataFrame for medications being taken
+dia["meds_per_visit"] = taking.sum(axis=1)
+# Counted how many medications are taken per visit
+avg_meds_per_patient = dia.groupby("patient_nbr")["meds_per_visit"].mean()
+# For each patient, computed their average number of meds per visit
+med_patient_pairs = dia.loc[taking.any(axis=1), ["patient_nbr"]].join(taking)
+took_med = med_patient_pairs.groupby("patient_nbr")[med_cols].max()
+# For each patient and each medication, check if they ever took it
+weighted = took_med.mul(avg_meds_per_patient, axis=0)
+# Multiply each column by the Series of average meds. If any patient took that medicine, multiplying their average
+# number of meds by true is just their average number, while times false would be 0. Then, just take the average
+# across every med by summing the average meds taken amongst those who have taken it (all non-zero values) and divide by
+# the total number of patients who have taken that med. Then subset to only include values above the threshold.
+valid_meds = took_med.sum() > 0
+# Last check is to avoid dividing by 0.
+q12 = (weighted.sum()[valid_meds] / took_med.sum()[valid_meds]).loc[lambda x: x >= 1.5].sort_values(ascending=False) # Series of medications and averages
+print(q12)
