@@ -170,22 +170,26 @@ q11 = grouped["readmit_percent"].sort_values(ascending=False).head(7)  # Series 
 # #     largest to smallest average.
 # #     (Hint: df.columns gives the column names of the data frame df.)
 
-med_cols = dia.loc[:, "metformin":"citoglipton"].columns
-taking = dia[med_cols].isin(["Up", "Down", "Steady"])
-# Created a boolean DataFrame for medications being taken
-dia["meds_per_visit"] = taking.sum(axis=1)
-# Counted how many medications are taken per visit
-avg_meds_per_patient = dia.groupby("patient_nbr")["meds_per_visit"].mean()
-# For each patient, computed their average number of meds per visit
-med_patient_pairs = dia.loc[taking.any(axis=1), ["patient_nbr"]].join(taking)
-took_med = med_patient_pairs.groupby("patient_nbr")[med_cols].max()
-# For each patient and each medication, check if they ever took it
-weighted = took_med.mul(avg_meds_per_patient, axis=0)
-# Multiply each column by the Series of average meds. If any patient took that medicine, multiplying their average
-# number of meds by true is just their average number, while times false would be 0. Then, just take the average
-# across every med by summing the average meds taken amongst those who have taken it (all non-zero values) and divide by
-# the total number of patients who have taken that med. Then subset to only include values above the threshold.
-valid_meds = took_med.sum() > 0
-# Last check is to avoid dividing by 0.
-q12 = (weighted.sum()[valid_meds] / took_med.sum()[valid_meds]).loc[lambda x: x >= 1.5].sort_values(ascending=False) # Series of medications and averages
-print(q12)
+
+meds = dia.loc[:, 'metformin':'citoglipton']
+# get the correct rows
+patient_meds = (meds != "No").groupby(dia["patient_nbr"]).any()
+# creates a new dataframe with rows being patients and the columns being meds. The values are True/False have they
+# ever taken this medicine
+patient_total = patient_meds.sum(axis=1)
+# total number medicines they've ever taken
+num_meds = patient_meds.sum()
+# total number of patients who have taken that medicine
+valid = num_meds != 0
+# divide by zero check
+totals = patient_meds.mul(patient_total, axis=0)
+# multiplies the rows of the boolean matrix with each patient total, so if the value was true it now shows
+# how many meds they've taken, and if it was false it shows 0 so it doesn't count towards the average.
+results = totals.sum()[valid] / num_meds[valid]
+# takes the desired average
+results = results.sort_values(ascending=False)
+# sorts the averages
+results = results[results >= 1.5]
+# filters out based on threshold
+
+q12 = results # Series of medications and averages
